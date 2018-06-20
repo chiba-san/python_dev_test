@@ -36,6 +36,10 @@ if __name__ == '__main__':
     input_file_name = "input.txt"
     output_file_name = "output.txt"
 
+    #clear output file
+    with open(output_file_name, 'w'):
+        pass
+
     print("reading started\n")
     start = time.time()
 
