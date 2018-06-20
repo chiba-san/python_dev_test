@@ -1,6 +1,7 @@
 from multiprocessing import Pool
 import os, time, sys
 
+#file chunk size
 BUFFER_SIZE = 1024*1024
 
 
@@ -35,6 +36,7 @@ def get_chunks(file_name, size=BUFFER_SIZE):
 
 if __name__ == '__main__':
 
+    #sum of all lines (except first one)
     share_sum = 0
     input_file_name = "input.txt"
     output_file_name = "output.txt"
@@ -46,10 +48,13 @@ if __name__ == '__main__':
     print("reading started\n")
     start = time.time()
 
+    # create pool of threads to read files by chanks
+    # number of threads = current system cpu cores
     with Pool(processes=os.cpu_count()) as pool:
         results = [pool.apply_async(reading_worker, (chunk_start, chunk_size, input_file_name)) for chunk_start, chunk_size in get_chunks(input_file_name)]
         for r in results:
             try:
+                #add chunks results async with timeout
                 share_sum += r.get(timeout=1)
             except TimeoutError:
                 print("multiprocessing.TimeoutError")
@@ -65,6 +70,7 @@ if __name__ == '__main__':
     print("writing started\n")
     start = time.time()
 
+    #read & write line by line with less memory
     with open(output_file_name, "a") as wf:
         with open(input_file_name) as rf:
             rf.readline()
