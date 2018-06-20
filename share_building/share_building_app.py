@@ -1,8 +1,7 @@
 from multiprocessing import Pool
-import os
-import time
+import os, time, sys
 
-BUFFER_SIZE = 512*512
+BUFFER_SIZE = 1024*1024
 
 
 def reading_worker(chunk_start, chunk_size, file_name):
@@ -11,7 +10,11 @@ def reading_worker(chunk_start, chunk_size, file_name):
         f.seek(chunk_start)
         lines = f.read(chunk_size).splitlines()
         for ln in lines:
-            _share_sum += float(ln)
+            try:
+                _share_sum += float(ln)
+            except ValueError as ex:
+                print("read bad value")
+                raise ex
         return _share_sum
 
 
@@ -49,7 +52,10 @@ if __name__ == '__main__':
             try:
                 share_sum += r.get(timeout=1)
             except TimeoutError:
-                print("We lacked patience and got a multiprocessing.TimeoutError")
+                print("multiprocessing.TimeoutError")
+                sys.exit()
+            except ValueError:
+                sys.exit()
 
     done = time.time()
     elapsed = done - start
